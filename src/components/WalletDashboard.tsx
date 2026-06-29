@@ -438,14 +438,17 @@ export default function WalletDashboard() {
       setAccountDetails(details);
       setTransactions(txs);
     } catch {
-      /* silent */
+      // ignore fetch errors
     } finally {
       setIsLoadingData(false);
     }
   }, [selectedAccount, fetchAccountDetails, fetchTransactionHistory]);
 
   useEffect(() => {
-    if (selectedAccount) loadData();
+    if (selectedAccount) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadData();
+    }
   }, [selectedAccount, loadData]);
 
   const handleSend = async (dest: string, amount: string) => {

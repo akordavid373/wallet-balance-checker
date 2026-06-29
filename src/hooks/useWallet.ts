@@ -328,9 +328,10 @@ export function useWallet() {
           await connect();
         }
       } catch {
-        /* silent */
+        // ignore auto-connect errors
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

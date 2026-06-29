@@ -158,7 +158,9 @@ export function useContract(contractId: string) {
           })),
         );
       }
-    } catch {}
+    } catch {
+      // ignore simulation errors
+    }
   }, [simulateView]);
 
   const registerWallet = useCallback(
@@ -223,7 +225,9 @@ export function useContract(contractId: string) {
           if (data && typeof data === 'object') {
             walletStr = (data as any).wallet?.toString() || (data as any).to?.toString() || '';
           }
-        } catch {}
+        } catch {
+          // ignore parse errors for individual events
+        }
         return {
           id: e.id,
           type: topicStr,
@@ -233,7 +237,9 @@ export function useContract(contractId: string) {
         };
       });
       setContractEvents(parsed);
-    } catch {}
+    } catch {
+      // ignore event fetch errors
+    }
   }, [contractId]);
 
   const startPolling = useCallback(
