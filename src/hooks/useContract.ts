@@ -215,8 +215,15 @@ export function useContract(contractId: string) {
         limit: 50,
       });
       const parsed: ContractEvent[] = (result.events || []).map((e) => {
-        const topicStr = e.topic?.[0]?.toString() || '';
-        const walletStr = e.topic?.[1]?.toString() || '';
+        const topic0 = e.topic?.[0];
+        const topicStr = topic0 ? (scValToNative(topic0)?.toString() || '') : '';
+        let walletStr = '';
+        try {
+          const data = scValToNative(e.value);
+          if (data && typeof data === 'object') {
+            walletStr = (data as any).wallet?.toString() || (data as any).to?.toString() || '';
+          }
+        } catch {}
         return {
           id: e.id,
           type: topicStr,
