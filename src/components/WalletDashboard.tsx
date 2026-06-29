@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '../hooks/useWallet';
 import { useContract } from '../hooks/useContract';
 import ContractPanel from './ContractPanel';
+import { SkeletonHero, SkeletonTable } from './LoadingSkeleton';
 import type { WalletAccount, AccountDetails, TransactionRecord, AssetBalance } from '../hooks/useWallet';
 
 /* ───────── helpers ───────── */
@@ -421,12 +422,14 @@ export default function WalletDashboard() {
   const [isFunding, setIsFunding] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(null);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [tab, setTab] = useState<'balances' | 'assets' | 'details' | 'history'>('balances');
 
   const loadData = useCallback(async () => {
     if (!selectedAccount) return;
+    setIsLoadingData(true);
     try {
       const [details, txs] = await Promise.all([
         fetchAccountDetails(selectedAccount.publicKey),
@@ -436,6 +439,8 @@ export default function WalletDashboard() {
       setTransactions(txs);
     } catch {
       /* silent */
+    } finally {
+      setIsLoadingData(false);
     }
   }, [selectedAccount, fetchAccountDetails, fetchTransactionHistory]);
 
@@ -552,6 +557,7 @@ export default function WalletDashboard() {
       )}
 
       {/* hero */}
+      {selectedAccount && !isConnected && <SkeletonHero />}
       {selectedAccount && (
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between mb-3">
@@ -674,9 +680,9 @@ export default function WalletDashboard() {
               ))}
             </div>
           )}
-          {tab === 'assets' && (accountDetails ? <AssetBalancesPanel balances={accountDetails.balances} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
-          {tab === 'details' && (accountDetails ? <AccountDetailsPanel details={accountDetails} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
-          {tab === 'history' && <TransactionHistory transactions={transactions} />}
+          {tab === 'assets' && (accountDetails ? <AssetBalancesPanel balances={accountDetails.balances} /> : isLoadingData ? <SkeletonTable rows={3} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
+          {tab === 'details' && (accountDetails ? <AccountDetailsPanel details={accountDetails} /> : isLoadingData ? <SkeletonTable rows={4} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
+          {tab === 'history' && (transactions.length > 0 ? <TransactionHistory transactions={transactions} /> : isLoadingData ? <SkeletonTable rows={3} /> : <TransactionHistory transactions={transactions} />)}
         </div>
       </div>
 

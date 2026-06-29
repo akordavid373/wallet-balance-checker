@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractimpl, contracttype, contracterror, log,
+    contract, contractimpl, contracttype, contracterror, contractevent, log,
     Address, Env, Symbol, Val, vec,
 };
 
@@ -10,6 +10,28 @@ pub struct VaultInfo {
     pub owner: Address,
     pub balance: i128,
     pub created_at: u64,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VaultCreatedEvent {
+    pub owner: Address,
+    pub timestamp: u64,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VaultDepositedEvent {
+    pub owner: Address,
+    pub amount: i128,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VaultWithdrawnEvent {
+    pub owner: Address,
+    pub amount: i128,
+    pub to: Address,
 }
 
 #[contracttype]
@@ -79,10 +101,10 @@ impl Vault {
             .instance()
             .set(&DataKey::VaultCount, &(count + 1));
 
-        env.events().publish(
-            ("VaultCreated", owner.clone()),
-            ledger_timestamp,
-        );
+        VaultCreatedEvent {
+            owner: owner.clone(),
+            timestamp: ledger_timestamp,
+        }.publish(&env);
 
         log!(&env, "Vault created for: {}", owner);
 
@@ -105,10 +127,10 @@ impl Vault {
         info.balance += amount;
         env.storage().instance().set(&DataKey::Vault(owner.clone()), &info);
 
-        env.events().publish(
-            ("VaultDeposited", owner.clone()),
+        VaultDepositedEvent {
+            owner: owner.clone(),
             amount,
-        );
+        }.publish(&env);
 
         log!(&env, "Deposited {} into vault of {}", amount, owner);
 
@@ -150,10 +172,11 @@ impl Vault {
         info.balance -= amount;
         env.storage().instance().set(&DataKey::Vault(owner.clone()), &info);
 
-        env.events().publish(
-            ("VaultWithdrawn", owner.clone(), to.clone()),
+        VaultWithdrawnEvent {
+            owner: owner.clone(),
             amount,
-        );
+            to: to.clone(),
+        }.publish(&env);
 
         log!(&env, "Withdrew {} from vault of {} to {}", amount, owner, to);
 

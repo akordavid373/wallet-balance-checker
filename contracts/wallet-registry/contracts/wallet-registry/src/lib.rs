@@ -1,6 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractimpl, contracttype, contracterror, log, symbol_short, Address, Env, String, Vec,
+    contract, contractimpl, contracttype, contracterror, contractevent, log,
+    Address, Env, String, Vec,
 };
 
 #[contracttype]
@@ -8,6 +9,21 @@ use soroban_sdk::{
 pub struct WalletInfo {
     pub label: String,
     pub registered_at: u64,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct WalletRegisteredEvent {
+    pub wallet: Address,
+    pub label: String,
+    pub timestamp: u64,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct WalletRemovedEvent {
+    pub wallet: Address,
+    pub timestamp: u64,
 }
 
 #[contracttype]
@@ -66,10 +82,11 @@ impl WalletRegistry {
             .instance()
             .set(&DataKey::WalletCount, &(count + 1));
 
-        env.events().publish(
-            (symbol_short!("reg"), symbol_short!("wallet")),
-            (wallet.clone(), label, ledger_timestamp),
-        );
+        WalletRegisteredEvent {
+            wallet: wallet.clone(),
+            label,
+            timestamp: ledger_timestamp,
+        }.publish(&env);
 
         log!(&env, "Wallet registered: {}", wallet);
 
@@ -136,10 +153,10 @@ impl WalletRegistry {
                 .set(&DataKey::WalletCount, &(count - 1));
         }
 
-        env.events().publish(
-            (symbol_short!("rem"), symbol_short!("wallet")),
-            (wallet.clone(), ledger_timestamp),
-        );
+        WalletRemovedEvent {
+            wallet: wallet.clone(),
+            timestamp: ledger_timestamp,
+        }.publish(&env);
 
         log!(&env, "Wallet removed: {}", wallet);
 

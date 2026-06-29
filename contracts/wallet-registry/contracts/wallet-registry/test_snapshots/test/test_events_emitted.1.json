@@ -172,19 +172,26 @@
           "v0": {
             "topics": [
               {
-                "symbol": "rem"
-              },
-              {
-                "symbol": "wallet"
+                "symbol": "wallet_removed_event"
               }
             ],
             "data": {
-              "vec": [
+              "map": [
                 {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                  "key": {
+                    "symbol": "timestamp"
+                  },
+                  "val": {
+                    "u64": "0"
+                  }
                 },
                 {
-                  "u64": "0"
+                  "key": {
+                    "symbol": "wallet"
+                  },
+                  "val": {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                  }
                 }
               ]
             }
