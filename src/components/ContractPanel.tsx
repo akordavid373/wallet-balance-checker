@@ -92,14 +92,14 @@ export default function ContractPanel({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="border-b border-gray-200 px-5 py-4 flex items-center justify-between">
+      <div className="border-b border-gray-200 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
         <div className="flex items-center gap-2">
-          <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="text-lg font-semibold text-gray-900">Wallet Registry (Contract)</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Wallet Registry (Contract)</h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           {!isPolling ? (
             <button
               onClick={onStartPolling}
@@ -160,13 +160,13 @@ export default function ContractPanel({
         {showForm && !isRegistered && (
           <div className="p-4 bg-gray-50 rounded-xl space-y-3">
             <p className="text-sm text-gray-600">Register your wallet on the Soroban contract</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Label (e.g., My Wallet)"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && label) {
                     onRegister(selectedPublicKey, label);
@@ -184,7 +184,7 @@ export default function ContractPanel({
                   }
                 }}
                 disabled={isContractLoading || !label}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
                 {isContractLoading ? 'Registering\u2026' : 'Register'}
               </button>

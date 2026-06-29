@@ -519,9 +519,9 @@ export default function WalletDashboard() {
   /* ──── connected ──── */
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 py-8 px-4">
+    <div className="max-w-3xl mx-auto space-y-6 py-4 sm:py-8 px-4">
       {/* header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Wallet Dashboard</h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -529,7 +529,7 @@ export default function WalletDashboard() {
             {selectedAccount && ` \u00B7 ${selectedAccount.label}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -565,7 +565,7 @@ export default function WalletDashboard() {
             {fmtBalance(selectedAccount.balance)}{' '}
             <span className="text-xl text-blue-200">XLM</span>
           </p>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div className="flex items-center gap-2">
               <span className="text-sm text-blue-100 font-mono">{shortKey(selectedAccount.publicKey, 12)}</span>
               <button
@@ -578,7 +578,7 @@ export default function WalletDashboard() {
                 </svg>
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {parseFloat(selectedAccount.balance) === 0 && (
                 <button
                   onClick={handleFund}
@@ -645,12 +645,12 @@ export default function WalletDashboard() {
 
       {/* detail tabs */}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="flex border-b border-gray-200">
+        <div className="flex overflow-x-auto border-b border-gray-200 scrollbar-hide">
           {(['balances', 'assets', 'details', 'history'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-3 text-sm font-medium capitalize ${
+              className={`flex-1 py-3 text-sm font-medium capitalize whitespace-nowrap ${
                 tab === t ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >

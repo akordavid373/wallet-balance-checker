@@ -8,7 +8,15 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 50"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 50",
+    "compile:registry": "cargo build --target wasm32v1-none --release --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml",
+    "compile:vault": "cargo build --target wasm32v1-none --release --manifest-path contracts/vault/contracts/vault/Cargo.toml",
+    "compile:contracts": "npm run compile:registry && npm run compile:vault",
+    "deploy:registry": "stellar contract deploy --wasm contracts/wallet-registry/target/wasm32v1-none/release/wallet_registry.wasm --source-account deployer --network testnet",
+    "deploy:vault": "stellar contract deploy --wasm contracts/vault/target/wasm32v1-none/release/vault.wasm --source-account deployer --network testnet",
+    "deploy:contracts": "npm run compile:contracts && npm run deploy:registry && npm run deploy:vault",
+    "test:e2e": "playwright test",
+    "test:contracts": "cargo test --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml && cargo test --manifest-path contracts/vault/contracts/vault/Cargo.toml"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",
