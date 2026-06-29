@@ -1,8 +1,13 @@
 # Wallet Balance Checker
 
+[![CI](https://github.com/akordavid373/wallet-balance-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/akordavid373/wallet-balance-checker/actions/workflows/ci.yml)
+[![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://akordavid373.github.io/wallet-balance-checker/)
+
 A Stellar wallet balance checker with Freighter integration. Connect your Freighter
 wallet on Stellar Testnet to view XLM balances across multiple accounts, send
 payments with real-time feedback, and explore account details on-chain.
+
+**[Live Demo](https://akordavid373.github.io/wallet-balance-checker/)** &mdash; requires Freighter browser extension on Testnet.
 
 ## Screenshots
 
