@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '../hooks/useWallet';
+import { useContract } from '../hooks/useContract';
+import ContractPanel from './ContractPanel';
 import type { WalletAccount, AccountDetails, TransactionRecord, AssetBalance } from '../hooks/useWallet';
 
 /* ───────── helpers ───────── */
@@ -409,6 +411,10 @@ export default function WalletDashboard() {
     fetchTransactionHistory,
   } = useWallet();
 
+  const CONTRACT_ID = 'CDUSF32RXYV7VQD272XKF24RCNYFWSV6Y6CGFCLUVDOPRJLI7BOK5G3V';
+
+  const contract = useContract(CONTRACT_ID);
+
   const [isSending, setIsSending] = useState(false);
   const [txResult, setTxResult] = useState<{ hash: string; status: string; message: string; amount?: string; destination?: string } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -674,6 +680,24 @@ export default function WalletDashboard() {
         </div>
       </div>
 
+      {/* contract panel */}
+      {selectedAccount && (
+        <ContractPanel
+          registeredWallets={contract.registeredWallets}
+          contractEvents={contract.contractEvents}
+          contractError={contract.contractError}
+          isContractLoading={contract.isContractLoading}
+          isPolling={contract.isPolling}
+          selectedPublicKey={selectedAccount.publicKey}
+          onRegister={(wallet, label) => contract.registerWallet(wallet, label, selectedAccount.publicKey)}
+          onRemove={(wallet) => contract.removeWallet(wallet, selectedAccount.publicKey)}
+          onRefresh={() => { contract.refreshRegisteredWallets(); contract.fetchEvents(); }}
+          onStartPolling={() => contract.startPolling()}
+          onStopPolling={() => contract.stopPolling()}
+          onDismissError={() => contract.clearContractError()}
+        />
+      )}
+
       {/* network info */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 text-sm">
         <div className="flex items-center gap-2 mb-2">
@@ -689,6 +713,10 @@ export default function WalletDashboard() {
         <div className="flex items-center justify-between text-gray-500 mt-1">
           <span>Horizon</span>
           <span className="font-mono text-xs text-gray-600">https://horizon-testnet.stellar.org</span>
+        </div>
+        <div className="flex items-center justify-between text-gray-500 mt-1">
+          <span>Contract</span>
+          <span className="font-mono text-xs text-gray-600">{shortKey(CONTRACT_ID, 16)}</span>
         </div>
       </div>
     </div>
