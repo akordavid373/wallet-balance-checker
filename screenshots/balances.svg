@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <linearGradient id="hero2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
+  </defs>
+  <rect width="800" height="520" fill="#f8fafc" rx="8"/>
+  <!-- browser chrome -->
+  <rect x="0" y="0" width="800" height="40" fill="#f1f5f9"/>
+  <circle cx="20" cy="20" r="6" fill="#ef4444"/>
+  <circle cx="38" cy="20" r="6" fill="#eab308"/>
+  <circle cx="56" cy="20" r="6" fill="#22c55e"/>
+  <rect x="80" y="12" width="160" height="16" rx="4" fill="#e2e8f0"/>
+  <!-- All Assets tab active -->
+  <rect x="24" y="60" width="752" height="44" rx="12 12 0 0" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="82" y="88" font-size="14" fill="#64748b">Balances</text>
+  <rect x="240" y="102" width="188" height="2" fill="#3b82f6"/>
+  <text x="270" y="88" font-size="14" font-weight="500" fill="#2563eb">All Assets</text>
+  <text x="460" y="88" font-size="14" fill="#64748b">Details</text>
+  <text x="640" y="88" font-size="14" fill="#64748b">History</text>
+  <!-- assets content -->
+  <rect x="24" y="104" width="752" height="400" rx="0 0 12 12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="132" font-size="16" font-weight="600" fill="#0f172a">All Assets</text>
+  <!-- native XLM -->
+  <rect x="40" y="148" width="726" height="56" rx="10" fill="#eff6ff"/>
+  <rect x="56" y="160" width="32" height="32" rx="16" fill="#2563eb"/>
+  <text x="62" y="181" font-size="14" font-weight="bold" fill="white">X</text>
+  <text x="100" y="175" font-size="14" font-weight="500" fill="#0f172a">Stellar Lumens</text>
+  <text x="100" y="192" font-size="11" fill="#64748b">XLM (native)</text>
+  <text x="500" y="186" font-size="18" font-weight="bold" fill="#0f172a">1,234.5678</text>
+  <!-- USDC -->
+  <rect x="40" y="212" width="726" height="56" rx="10" fill="#f8fafc"/>
+  <rect x="56" y="224" width="32" height="32" rx="16" fill="#7c3aed"/>
+  <text x="62" y="245" font-size="14" font-weight="bold" fill="white">U</text>
+  <text x="100" y="239" font-size="14" font-weight="500" fill="#0f172a">USDC</text>
+  <text x="100" y="256" font-size="11" fill="#64748b" font-family="monospace">GA5ZSE…HJL3</text>
+  <text x="500" y="250" font-size="18" font-weight="bold" fill="#0f172a">500.0000</text>
+  <!-- XYZ token -->
+  <rect x="40" y="276" width="726" height="56" rx="10" fill="#f8fafc"/>
+  <rect x="56" y="288" width="32" height="32" rx="16" fill="#059669"/>
+  <text x="62" y="309" font-size="14" font-weight="bold" fill="white">X</text>
+  <text x="100" y="303" font-size="14" font-weight="500" fill="#0f172a">XYZ Token</text>
+  <text x="100" y="320" font-size="11" fill="#64748b" font-family="monospace">GC3SXO…PLK2</text>
+  <text x="500" y="314" font-size="18" font-weight="bold" fill="#0f172a">1,000.0000</text>
+  <!-- account balances summary -->
+  <text x="40" y="368" font-size="13" font-weight="500" fill="#64748b">Account Summary</text>
+  <rect x="40" y="380" width="726" height="36" rx="8" fill="#f8fafc"/>
+  <text x="56" y="403" font-size="13" fill="#0f172a">Account 1</text>
+  <text x="200" y="403" font-size="13" fill="#0f172a">Account 2</text>
+  <text x="360" y="403" font-size="13" fill="#0f172a">Account 3</text>
+  <text x="520" y="403" font-size="13" font-weight="bold" fill="#0f172a">Total: 1,791.3568 XLM</text>
+</svg>
