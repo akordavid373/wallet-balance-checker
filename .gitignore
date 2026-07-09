@@ -6,3 +6,6 @@ dist
 contracts/*/target/
 contracts/artifacts/
 .env
+test-results/
+test_snapshots/
+contracts/*/test_snapshots/

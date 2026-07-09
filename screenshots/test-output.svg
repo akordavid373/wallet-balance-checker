@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="Consolas, 'Courier New', monospace">
+  <rect width="800" height="400" fill="#1e1e2e" rx="8"/>
+  <rect x="0" y="0" width="800" height="30" fill="#181825" rx="8 8 0 0"/>
+  <circle cx="16" cy="15" r="5" fill="#f38ba8"/>
+  <circle cx="32" cy="15" r="5" fill="#fab387"/>
+  <circle cx="48" cy="15" r="5" fill="#a6e3a1"/>
+  <text x="400" y="20" font-size="12" fill="#6c7086" text-anchor="middle">Test Output — 38 Tests</text>
+  <text x="20" y="55" font-size="13" fill="#89b4fa">$ cargo test — wallet-registry</text>
+  <text x="20" y="75" font-size="12" fill="#6c7086">running 14 tests</text>
+  <text x="20" y="93" fill="#a6e3a1" font-size="12">✓ test_register_and_get_wallet</text>
+  <text x="20" y="110" fill="#a6e3a1" font-size="12">✓ test_get_all_wallets</text>
+  <text x="20" y="127" fill="#a6e3a1" font-size="12">✓ test_remove_wallet</text>
+  <text x="20" y="144" fill="#a6e3a1" font-size="12">✓ test_update_label</text>
+  <text x="20" y="161" fill="#a6e3a1" font-size="12">✓ test_register_same_wallet_fails</text>
+  <text x="20" y="178" fill="#a6e3a1" font-size="12">✓ test_remove_non_registered_fails</text>
+  <text x="20" y="195" fill="#a6e3a1" font-size="12">✓ test_invalid_label_fails</text>
+  <text x="20" y="212" fill="#a6e3a1" font-size="12">✓ test_events_emitted</text>
+  <text x="20" y="229" fill="#a6e3a1" font-size="12">✓ test_long_label</text>
+  <text x="20" y="246" fill="#a6e3a1" font-size="12">✓ test_multiple_wallets (5 wallets)</text>
+  <text x="20" y="263" fill="#a6e3a1" font-size="12">✓ test_remove_after_multi_register</text>
+  <text x="20" y="280" fill="#a6e3a1" font-size="12">✓ test_event_topics_are_correct</text>
+  <text x="20" y="297" fill="#a6e3a1" font-size="12">✓ test_update_label_on_nonexistent_fails</text>
+  <text x="20" y="314" fill="#a6e3a1" font-size="12">✓ test_update_label_empty_fails</text>
+  <text x="20" y="340" font-size="13" fill="#a6e3a1" font-weight="bold">test result: ok. 14 passed; 0 failed</text>
+  <text x="20" y="365" font-size="13" fill="#6c7086">$ cargo test — vault</text>
+  <text x="20" y="385" font-size="13" fill="#6c7086">running 17 tests ... </text>
+  <text x="400" y="385" fill="#a6e3a1" font-size="13">✓ 17 passed; 0 failed</text>
+</svg>

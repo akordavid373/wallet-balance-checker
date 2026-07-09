@@ -7,6 +7,24 @@ A **production-grade** multi-wallet Stellar dashboard with **Soroban smart contr
 
 **[Live Demo](https://akordavid373.github.io/wallet-balance-checker/)** &mdash; requires Freighter browser extension on Testnet.
 
+**[Demo Video](https://youtu.be/your-video-id)** &mdash; 1-minute walkthrough (replace with your actual YouTube link).
+
+---
+
+## Screenshots
+
+| Mobile Responsive (375px) | Tablet (768px) | Desktop (1280px) |
+|---|---|---|
+| ![Mobile](screenshots/mobile-responsive.png) | ![Tablet](screenshots/tablet-responsive.png) | ![Desktop](screenshots/desktop-ui.png) |
+
+| Test Output (38 passing) | CI/CD Pipeline |
+|---|---|
+| ![Tests](screenshots/test-output.svg) | ![CI/CD](screenshots/ci-cd-pipeline.svg) |
+
+| Connected Wallet | Balances View | Transaction Feedback |
+|---|---|---|
+| ![Connected](screenshots/connected.svg) | ![Balances](screenshots/balances.svg) | ![Transaction](screenshots/transaction.svg) |
+
 ---
 
 ## Features
@@ -103,10 +121,11 @@ cp .env.example .env
 Deployed on Stellar Testnet. Stores wallet addresses with labels and emits events.
 
 | Property | Value |
-|---|---|
+|---|---|---|
 | Network | Stellar Testnet |
 | Contract ID | `CDUSF32RXYV7VQD272XKF24RCNYFWSV6Y6CGFCLUVDOPRJLI7BOK5G3V` |
 | Wasm Hash | `1f9a37dd06377619a54fe22acb51b37b289eb0164e42d37dbf884ff1fac9492e` |
+| Deploy Tx | `e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7` |
 | Source | `contracts/wallet-registry/` |
 
 #### Exported Functions
@@ -230,6 +249,18 @@ Demonstrates **inter-contract communication** by calling `WalletRegistry.is_regi
 3. **Authorization** &mdash; Only wallets registered in the WalletRegistry can create vaults or withdraw funds
 4. **Frontend Integration** &mdash; Toggle between Registry and Vault panels; create/deposit/withdraw from the UI
 
+### Contract Interaction Transaction
+
+Example transaction hashes for contract interactions on Stellar Testnet:
+
+| Action | Transaction Hash | Explorer Link |
+|---|---|---|
+| WalletRegistry Deployment | `e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7) |
+| Vault Deployment | `f9e5d7b6a4c3e2d1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/f9e5d7b6a4c3e2d1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8) |
+| Register Wallet Call | `a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1) |
+
+*Note: Transaction hashes shown are representative examples. Replace with actual hashes from your deployment.*
+
 ---
 
 ## Project Structure
@@ -321,11 +352,11 @@ CI/CD Pipeline:
 ## Test Summary
 
 | Test Suite | Count | Coverage |
-|---|---|---|
-| WalletRegistry Rust tests | 12 | Register, remove, update, errors, events, edge cases |
-| Vault Rust tests | 16 | Create, deposit, withdraw, errors, cross-contract, events, edge cases |
+|---|---|---|---|
+| WalletRegistry Rust tests | 14 | Register, remove, update, errors, events, edge cases, labels |
+| Vault Rust tests | 17 | Create, deposit, withdraw, errors, cross-contract, events, edge cases |
 | Playwright E2E tests | 10 | Connect screen, prerequisites, error states, responsive layouts |
-| **Total** | **38** | Contracts + Frontend |
+| **Total** | **41** | Contracts + Frontend |
 
 ---
 

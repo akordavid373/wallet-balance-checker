@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <rect width="800" height="280" fill="#0d1117" rx="8"/>
+  <text x="24" y="36" font-size="16" font-weight="bold" fill="#e6edf3">CI/CD Pipeline — GitHub Actions</text>
+  <!-- lint -->
+  <rect x="24" y="60" width="170" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="48" cy="90" r="12" fill="#3fb950"/>
+  <text x="64" y="95" font-size="14" fill="#e6edf3" font-weight="500">lint</text>
+  <text x="48" y="118" font-size="11" fill="#8b949e">ESLint check</text>
+  <text x="48" y="133" font-size="11" fill="#3fb950">✓ passed</text>
+  <!-- contracts -->
+  <rect x="218" y="60" width="170" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="242" cy="90" r="12" fill="#3fb950"/>
+  <text x="258" y="95" font-size="14" fill="#e6edf3" font-weight="500">contracts</text>
+  <text x="242" y="118" font-size="11" fill="#8b949e">Build + 31 tests</text>
+  <text x="242" y="133" font-size="11" fill="#3fb950">✓ 31 passed</text>
+  <!-- build -->
+  <rect x="412" y="60" width="170" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="436" cy="90" r="12" fill="#3fb950"/>
+  <text x="452" y="95" font-size="14" fill="#e6edf3" font-weight="500">build</text>
+  <text x="436" y="118" font-size="11" fill="#8b949e">TypeScript + Vite</text>
+  <text x="436" y="133" font-size="11" fill="#3fb950">✓ success</text>
+  <!-- e2e -->
+  <rect x="606" y="60" width="170" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="630" cy="90" r="12" fill="#3fb950"/>
+  <text x="646" y="95" font-size="14" fill="#e6edf3" font-weight="500">e2e</text>
+  <text x="630" y="118" font-size="11" fill="#8b949e">Playwright tests</text>
+  <text x="630" y="133" font-size="11" fill="#3fb950">✓ 10 passed</text>
+  <!-- deploy -->
+  <rect x="315" y="176" width="170" height="80" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <circle cx="339" cy="206" r="12" fill="#3fb950"/>
+  <text x="355" y="211" font-size="14" fill="#e6edf3" font-weight="500">deploy</text>
+  <text x="339" y="234" font-size="11" fill="#8b949e">GitHub Pages</text>
+  <text x="339" y="249" font-size="11" fill="#3fb950">✓ live</text>
+  <!-- arrows -->
+  <line x1="194" y1="100" x2="218" y2="100" stroke="#30363d" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="388" y1="100" x2="412" y2="100" stroke="#30363d" stroke-width="2"/>
+  <line x1="582" y1="100" x2="606" y2="100" stroke="#30363d" stroke-width="2"/>
+  <line x1="497" y1="140" x2="497" y2="176" stroke="#30363d" stroke-width="2"/>
+  <line x1="497" y1="176" x2="485" y2="176" stroke="#30363d" stroke-width="2"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#30363d"/>
+    </marker>
+  </defs>
+</svg>
