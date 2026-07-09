@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/wallet-balance-checker/',
+  base: process.env.VITE_BASE || '/wallet-balance-checker/',
   server: {
     port: 3000,
     open: true,

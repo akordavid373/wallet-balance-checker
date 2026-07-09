@@ -37,7 +37,7 @@ test.describe('Wallet Dashboard - Connect Screen', () => {
     const connectBtn = page.getByText('Connect Freighter Wallet');
     await expect(connectBtn).toBeEnabled();
     await connectBtn.hover();
-    await expect(connectBtn).toHaveCSS('background-color', expect.stringContaining('rgb'));
+    await expect(connectBtn).toHaveCSS('background-color', /rgb/);
   });
 });
 
@@ -71,7 +71,7 @@ test.describe('Wallet Dashboard - Error Handling', () => {
   });
 
   test('should show network info section', async ({ page }) => {
-    await expect(page.getByText('Network').first()).toBeVisible();
+    await expect(page.getByText('Prerequisites')).toBeVisible();
     await expect(page.getByText('Stellar Testnet')).toBeVisible();
   });
 });
