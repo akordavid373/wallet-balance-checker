@@ -15,8 +15,11 @@
     "deploy:registry": "stellar contract deploy --wasm contracts/wallet-registry/target/wasm32v1-none/release/wallet_registry.wasm --source-account deployer --network testnet",
     "deploy:vault": "stellar contract deploy --wasm contracts/vault/target/wasm32v1-none/release/vault.wasm --source-account deployer --network testnet",
     "deploy:contracts": "npm run compile:contracts && npm run deploy:registry && npm run deploy:vault",
+    "deploy:scripts": "bash scripts/deploy-contracts.sh",
+    "verify:deploy": "node scripts/deploy-verify.js",
     "test:e2e": "playwright test",
-    "test:contracts": "cargo test --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml && cargo test --manifest-path contracts/vault/contracts/vault/Cargo.toml"
+    "test:contracts": "cargo test --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml && cargo test --manifest-path contracts/vault/contracts/vault/Cargo.toml",
+    "test:all": "npm run test:contracts && npm run test:e2e"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",

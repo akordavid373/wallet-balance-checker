@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -6,53 +6,69 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  NODE_VERSION: 20
+  RUST_VERSION: stable
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
   contracts:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           target: wasm32v1-none
-
-      - name: Install wasm32v1-none target
-        run: rustup target add wasm32v1-none
-
-      - name: Build contracts
-        run: |
-          cargo build --target wasm32v1-none --release --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml
-          cargo build --target wasm32v1-none --release --manifest-path contracts/vault/contracts/vault/Cargo.toml
-
-      - name: Test contracts
-        run: |
-          cargo test --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml
-          cargo test --manifest-path contracts/vault/contracts/vault/Cargo.toml
+          cache: true
+      - name: Build wallet-registry
+        run: cargo build --target wasm32v1-none --release --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml
+      - name: Build vault
+        run: cargo build --target wasm32v1-none --release --manifest-path contracts/vault/contracts/vault/Cargo.toml
+      - name: Test wallet-registry
+        run: cargo test --manifest-path contracts/wallet-registry/contracts/wallet-registry/Cargo.toml
+      - name: Test vault
+        run: cargo test --manifest-path contracts/vault/contracts/vault/Cargo.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: |
+            contracts/wallet-registry/target/wasm32v1-none/release/wallet_registry.wasm
+            contracts/vault/target/wasm32v1-none/release/vault.wasm
 
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
       - run: npm ci
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
 
   e2e:
     runs-on: ubuntu-latest
     needs: build
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
@@ -60,32 +76,26 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/master'
-    needs: [build, contracts]
+    needs: [build, contracts, lint]
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       pages: write
       id-token: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
       - run: npm ci
       - run: npm run build
-
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
-
       - id: deployment
         uses: actions/deploy-pages@v4

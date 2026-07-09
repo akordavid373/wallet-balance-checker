@@ -1,24 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useWallet } from '../hooks/useWallet';
 import { useContract } from '../hooks/useContract';
+import { useVault } from '../hooks/useVault';
 import ContractPanel from './ContractPanel';
+import VaultPanel from './VaultPanel';
+import NetworkStatus from './NetworkStatus';
+import { ToastContainer, toast } from './Toast';
 import { SkeletonHero, SkeletonTable } from './LoadingSkeleton';
-import type { WalletAccount, AccountDetails, TransactionRecord, AssetBalance } from '../hooks/useWallet';
-
-/* ───────── helpers ───────── */
-
-function shortKey(k: string, n = 8) {
-  return `${k.slice(0, n)}\u2026${k.slice(-n)}`;
-}
-
-function fmtBalance(b: string) {
-  return parseFloat(b).toLocaleString(undefined, {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 7,
-  });
-}
-
-/* ───────── BalanceCard ───────── */
+import { config } from '../config';
+import { shortKey, fmtBalance } from '../utils/helpers';
+import type { WalletAccount } from '../hooks/useWallet';
+import type { AccountDetails, TransactionRecord, AssetBalance } from '../utils/services';
 
 function BalanceCard({
   account,
@@ -70,8 +62,6 @@ function BalanceCard({
   );
 }
 
-/* ───────── TransactionFeedback ───────── */
-
 function TransactionFeedback({
   result,
   onDismiss,
@@ -113,7 +103,7 @@ function TransactionFeedback({
             {result.hash && (
               <div className="flex items-center gap-3 mt-2">
                 <a
-                  href={`https://stellar.expert/explorer/testnet/tx/${result.hash}`}
+                  href={`${config.stellarExpertUrl}/tx/${result.hash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
@@ -141,8 +131,6 @@ function TransactionFeedback({
     </div>
   );
 }
-
-/* ───────── SendXLMForm ───────── */
 
 function SendXLMForm({
   onSend,
@@ -193,7 +181,15 @@ function SendXLMForm({
           disabled={isSending || !destination || !amount || parseFloat(amount) <= 0}
           className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {isSending ? 'Sending\u2026' : 'Send XLM'}
+          {isSending ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Sending...
+            </span>
+          ) : 'Send XLM'}
         </button>
         <button type="button" onClick={onClose} className="px-4 py-2.5 text-gray-500 hover:text-gray-700">
           Cancel
@@ -202,8 +198,6 @@ function SendXLMForm({
     </form>
   );
 }
-
-/* ───────── AddAccountForm ───────── */
 
 function AddAccountForm({
   onAddByKey,
@@ -252,8 +246,6 @@ function AddAccountForm({
   );
 }
 
-/* ───────── AssetBalancesPanel ───────── */
-
 function AssetBalancesPanel({ balances }: { balances: AssetBalance[] }) {
   const native = balances.find((b) => b.asset_type === 'native');
   const others = balances.filter((b) => b.asset_type !== 'native');
@@ -293,8 +285,6 @@ function AssetBalancesPanel({ balances }: { balances: AssetBalance[] }) {
   );
 }
 
-/* ───────── AccountDetailsPanel ───────── */
-
 function AccountDetailsPanel({ details }: { details: AccountDetails }) {
   return (
     <div className="space-y-3">
@@ -317,7 +307,7 @@ function AccountDetailsPanel({ details }: { details: AccountDetails }) {
         <div>
           <p className="text-xs text-gray-500 mb-2 font-medium">Signers ({details.signers.length})</p>
           <div className="space-y-1">
-            {details.signers.map((s, i) => (
+            {details.signers.map((s: { key: string; weight: number }, i: number) => (
               <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
                 <span className="font-mono text-gray-700 truncate mr-2">{shortKey(s.key, 12)}</span>
                 <span className="text-gray-500">weight: {s.weight}</span>
@@ -330,13 +320,12 @@ function AccountDetailsPanel({ details }: { details: AccountDetails }) {
   );
 }
 
-/* ───────── TransactionHistory ───────── */
-
 function TransactionHistory({ transactions }: { transactions: TransactionRecord[] }) {
   if (transactions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-400">
         <p className="text-sm">No transactions yet</p>
+        <p className="text-xs mt-1">Send or receive XLM to see transactions here</p>
       </div>
     );
   }
@@ -375,7 +364,7 @@ function TransactionHistory({ transactions }: { transactions: TransactionRecord[
               </span>
             )}
             <a
-              href={`https://stellar.expert/explorer/testnet/tx/${tx.hash}`}
+              href={`${config.stellarExpertUrl}/tx/${tx.hash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-blue-500"
@@ -390,8 +379,6 @@ function TransactionHistory({ transactions }: { transactions: TransactionRecord[
     </div>
   );
 }
-
-/* ───────── Main: WalletDashboard ───────── */
 
 export default function WalletDashboard() {
   const {
@@ -412,9 +399,11 @@ export default function WalletDashboard() {
     fetchTransactionHistory,
   } = useWallet();
 
-  const CONTRACT_ID = 'CDUSF32RXYV7VQD272XKF24RCNYFWSV6Y6CGFCLUVDOPRJLI7BOK5G3V';
+  const REGISTRY_ID = config.walletRegistryId;
+  const VAULT_ID = config.vaultContractId;
 
-  const contract = useContract(CONTRACT_ID);
+  const contract = useContract(REGISTRY_ID);
+  const vault = useVault(VAULT_ID, REGISTRY_ID);
 
   const [isSending, setIsSending] = useState(false);
   const [txResult, setTxResult] = useState<{ hash: string; status: string; message: string; amount?: string; destination?: string } | null>(null);
@@ -426,30 +415,57 @@ export default function WalletDashboard() {
   const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(null);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [tab, setTab] = useState<'balances' | 'assets' | 'details' | 'history'>('balances');
+  const [showPanel, setShowPanel] = useState<'contract' | 'vault' | null>('contract');
+  const dataLoadedRef = useRef(false);
 
-  const loadData = useCallback(async () => {
-    if (!selectedAccount) return;
+  const scheduleDataLoad = useCallback((pk: string) => {
+    if (dataLoadedRef.current) return;
+    dataLoadedRef.current = true;
+    setTimeout(() => {
+      setIsLoadingData(true);
+      Promise.all([
+        fetchAccountDetails(pk),
+        fetchTransactionHistory(pk),
+      ]).then(([details, txs]) => {
+        setAccountDetails(details);
+        setTransactions(txs);
+      }).catch(() => {
+        // ignore
+      }).finally(() => {
+        setIsLoadingData(false);
+      });
+    }, 0);
+  }, [fetchAccountDetails, fetchTransactionHistory]);
+
+  const loadData = useCallback(async (pk: string) => {
     setIsLoadingData(true);
     try {
       const [details, txs] = await Promise.all([
-        fetchAccountDetails(selectedAccount.publicKey),
-        fetchTransactionHistory(selectedAccount.publicKey),
+        fetchAccountDetails(pk),
+        fetchTransactionHistory(pk),
       ]);
       setAccountDetails(details);
       setTransactions(txs);
     } catch {
-      // ignore fetch errors
+      // ignore fetch errors for UI data
     } finally {
       setIsLoadingData(false);
     }
-  }, [selectedAccount, fetchAccountDetails, fetchTransactionHistory]);
+  }, [fetchAccountDetails, fetchTransactionHistory]);
 
   useEffect(() => {
     if (selectedAccount) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      loadData();
+      scheduleDataLoad(selectedAccount.publicKey);
     }
-  }, [selectedAccount, loadData]);
+  }, [selectedAccount?.publicKey, scheduleDataLoad, selectedAccount]);
+
+  useEffect(() => {
+    if (selectedAccount && VAULT_ID) {
+      vault.fetchVault(selectedAccount.publicKey);
+      vault.fetchVaultCount();
+      vault.fetchRegistryAddress();
+    }
+  }, [selectedAccount, VAULT_ID, vault]);
 
   const handleSend = async (dest: string, amount: string) => {
     setIsSending(true);
@@ -457,17 +473,23 @@ export default function WalletDashboard() {
     try {
       const r = await sendXLM(dest, amount);
       setTxResult(r);
-      if (r.status === 'success') { setShowSend(false); loadData(); }
+      if (r.status === 'success' && selectedAccount) {
+        setShowSend(false);
+        loadData(selectedAccount.publicKey);
+        toast(`Sent ${amount} XLM to ${shortKey(dest, 4)}`, 'success');
+      }
     } finally {
       setIsSending(false);
     }
   };
 
   const handleRefresh = async () => {
+    if (!selectedAccount) return;
     setIsRefreshing(true);
     await refreshBalances();
-    await loadData();
+    await loadData(selectedAccount.publicKey);
     setIsRefreshing(false);
+    toast('Balances refreshed', 'info');
   };
 
   const handleFund = async () => {
@@ -477,26 +499,26 @@ export default function WalletDashboard() {
     try {
       const hash = await fundWithFriendbot();
       setTxResult({ hash, status: 'success', message: hash, amount: '10,000' });
-      loadData();
+      loadData(selectedAccount.publicKey);
+      toast('Account funded with 10,000 XLM!', 'success');
     } catch (err: any) {
       setTxResult({ hash: '', status: 'failed', message: err.message });
+      toast(err.message, 'error');
     } finally {
       setIsFunding(false);
     }
   };
 
-  /* ──── not connected ──── */
-
   if (!isConnected) {
     return (
-      <div className="max-w-md mx-auto mt-12">
+      <div className="max-w-md mx-auto mt-12 px-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Wallet Balance Checker</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{config.appName}</h2>
           <p className="text-gray-500 mt-2">Connect your Freighter wallet (Stellar Testnet)</p>
 
           {error && (
@@ -510,7 +532,15 @@ export default function WalletDashboard() {
             disabled={isConnecting}
             className="mt-6 w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 text-lg"
           >
-            {isConnecting ? 'Connecting\u2026' : 'Connect Freighter Wallet'}
+            {isConnecting ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Connecting...
+              </span>
+            ) : 'Connect Freighter Wallet'}
           </button>
 
           <div className="mt-6 p-4 bg-gray-50 rounded-xl text-left text-sm text-gray-600 space-y-1">
@@ -520,18 +550,19 @@ export default function WalletDashboard() {
             <p>3. Fund via Friendbot (automatic when balance is 0)</p>
           </div>
         </div>
+        <ToastContainer />
       </div>
     );
   }
 
-  /* ──── connected ──── */
-
   return (
-    <div className="max-w-3xl mx-auto space-y-6 py-4 sm:py-8 px-4">
-      {/* header */}
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 py-4 sm:py-8 px-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Wallet Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Wallet Dashboard</h1>
+            <NetworkStatus />
+          </div>
           <p className="text-sm text-gray-500 mt-0.5">
             {accounts.length} account{accounts.length > 1 ? 's' : ''}
             {selectedAccount && ` \u00B7 ${selectedAccount.label}`}
@@ -554,15 +585,13 @@ export default function WalletDashboard() {
         </div>
       </div>
 
-      {/* error */}
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
       )}
 
-      {/* hero */}
       {selectedAccount && !isConnected && <SkeletonHero />}
       {selectedAccount && (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between mb-3">
             <span className="text-blue-100 text-sm">{selectedAccount.label}</span>
             <div className="flex items-center bg-blue-500/30 px-3 py-1 rounded-full text-xs text-blue-100">
@@ -570,16 +599,16 @@ export default function WalletDashboard() {
               Testnet
             </div>
           </div>
-          <p className="text-4xl font-bold mb-3">
+          <p className="text-3xl sm:text-4xl font-bold mb-3">
             {fmtBalance(selectedAccount.balance)}{' '}
-            <span className="text-xl text-blue-200">XLM</span>
+            <span className="text-lg sm:text-xl text-blue-200">XLM</span>
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-blue-100 font-mono">{shortKey(selectedAccount.publicKey, 12)}</span>
+            <div className="flex items-center gap-2 max-w-full">
+              <span className="text-sm text-blue-100 font-mono truncate">{shortKey(selectedAccount.publicKey, 12)}</span>
               <button
-                onClick={() => navigator.clipboard.writeText(selectedAccount.publicKey)}
-                className="text-blue-200 hover:text-white"
+                onClick={() => { navigator.clipboard.writeText(selectedAccount.publicKey); toast('Address copied', 'success'); }}
+                className="text-blue-200 hover:text-white shrink-0"
                 title="Copy address"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -594,7 +623,7 @@ export default function WalletDashboard() {
                   disabled={isFunding}
                   className="px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg text-sm font-medium hover:bg-yellow-300 disabled:opacity-50"
                 >
-                  {isFunding ? 'Funding\u2026' : 'Fund via Friendbot'}
+                  {isFunding ? 'Funding...' : 'Fund via Friendbot'}
                 </button>
               )}
               <button
@@ -608,10 +637,8 @@ export default function WalletDashboard() {
         </div>
       )}
 
-      {/* tx feedback */}
       {txResult && <TransactionFeedback result={txResult} onDismiss={() => setTxResult(null)} />}
 
-      {/* send form */}
       {showSend && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Send XLM</h3>
@@ -619,8 +646,7 @@ export default function WalletDashboard() {
         </div>
       )}
 
-      {/* accounts list */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Accounts</h3>
         <div className="grid gap-3">
           {accounts.map((acc) => (
@@ -652,7 +678,6 @@ export default function WalletDashboard() {
         )}
       </div>
 
-      {/* detail tabs */}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="flex overflow-x-auto border-b border-gray-200 scrollbar-hide">
           {(['balances', 'assets', 'details', 'history'] as const).map((t) => (
@@ -667,7 +692,7 @@ export default function WalletDashboard() {
             </button>
           ))}
         </div>
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           {tab === 'balances' && (
             <div className="space-y-2">
               {accounts.map((acc) => (
@@ -683,31 +708,74 @@ export default function WalletDashboard() {
               ))}
             </div>
           )}
-          {tab === 'assets' && (accountDetails ? <AssetBalancesPanel balances={accountDetails.balances} /> : isLoadingData ? <SkeletonTable rows={3} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
-          {tab === 'details' && (accountDetails ? <AccountDetailsPanel details={accountDetails} /> : isLoadingData ? <SkeletonTable rows={4} /> : <p className="text-center text-gray-400 py-4">Loading\u2026</p>)}
+          {tab === 'assets' && (accountDetails ? <AssetBalancesPanel balances={accountDetails.balances} /> : isLoadingData ? <SkeletonTable rows={3} /> : <p className="text-center text-gray-400 py-4">Loading...</p>)}
+          {tab === 'details' && (accountDetails ? <AccountDetailsPanel details={accountDetails} /> : isLoadingData ? <SkeletonTable rows={4} /> : <p className="text-center text-gray-400 py-4">Loading...</p>)}
           {tab === 'history' && (transactions.length > 0 ? <TransactionHistory transactions={transactions} /> : isLoadingData ? <SkeletonTable rows={3} /> : <TransactionHistory transactions={transactions} />)}
         </div>
       </div>
 
-      {/* contract panel */}
       {selectedAccount && (
-        <ContractPanel
-          registeredWallets={contract.registeredWallets}
-          contractEvents={contract.contractEvents}
-          contractError={contract.contractError}
-          isContractLoading={contract.isContractLoading}
-          isPolling={contract.isPolling}
-          selectedPublicKey={selectedAccount.publicKey}
-          onRegister={(wallet, label) => contract.registerWallet(wallet, label, selectedAccount.publicKey)}
-          onRemove={(wallet) => contract.removeWallet(wallet, selectedAccount.publicKey)}
-          onRefresh={() => { contract.refreshRegisteredWallets(); contract.fetchEvents(); }}
-          onStartPolling={() => contract.startPolling()}
-          onStopPolling={() => contract.stopPolling()}
-          onDismissError={() => contract.clearContractError()}
-        />
+        <div>
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setShowPanel('contract')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                showPanel === 'contract' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Wallet Registry
+            </button>
+            <button
+              onClick={() => setShowPanel('vault')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                showPanel === 'vault' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Vault {VAULT_ID ? '' : '(not deployed)'}
+            </button>
+          </div>
+
+          {showPanel === 'contract' && (
+            <ContractPanel
+              registeredWallets={contract.registeredWallets}
+              contractEvents={contract.contractEvents}
+              contractError={contract.contractError}
+              isContractLoading={contract.isContractLoading}
+              isPolling={contract.isPolling}
+              hasNewEvents={contract.hasNewEvents}
+              eventsCount={contract.eventsCount}
+              selectedPublicKey={selectedAccount.publicKey}
+              onRegister={(wallet, label) => contract.registerWallet(wallet, label, selectedAccount.publicKey)}
+              onRemove={(wallet) => contract.removeWallet(wallet, selectedAccount.publicKey)}
+              onRefresh={() => { contract.refreshRegisteredWallets(); contract.fetchEvents(); }}
+              onStartPolling={() => contract.startPolling()}
+              onStopPolling={() => contract.stopPolling()}
+              onRestartPolling={() => contract.restartPolling()}
+              onDismissError={() => contract.clearContractError()}
+            />
+          )}
+
+          {showPanel === 'vault' && (
+            <VaultPanel
+              vault={vault.vault}
+              vaultCount={vault.vaultCount}
+              vaultError={vault.vaultError}
+              isVaultLoading={vault.isVaultLoading}
+              registryAddress={vault.registryAddress}
+              onCreateVault={() => vault.createVault(selectedAccount.publicKey)}
+              onDeposit={(amount) => vault.deposit(selectedAccount.publicKey, amount)}
+              onWithdraw={(amount, to) => vault.withdraw(selectedAccount.publicKey, amount, to)}
+              onRefreshVault={() => {
+                vault.fetchVault(selectedAccount.publicKey);
+                vault.fetchVaultCount();
+                vault.fetchRegistryAddress();
+              }}
+              onDismissVaultError={() => vault.clearVaultError()}
+            />
+          )}
+        </div>
       )}
 
-      {/* network info */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 text-sm">
         <div className="flex items-center gap-2 mb-2">
           <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -721,13 +789,21 @@ export default function WalletDashboard() {
         </div>
         <div className="flex items-center justify-between text-gray-500 mt-1">
           <span>Horizon</span>
-          <span className="font-mono text-xs text-gray-600">https://horizon-testnet.stellar.org</span>
+          <span className="font-mono text-xs text-gray-600">{config.horizonUrl}</span>
         </div>
         <div className="flex items-center justify-between text-gray-500 mt-1">
-          <span>Contract</span>
-          <span className="font-mono text-xs text-gray-600">{shortKey(CONTRACT_ID, 16)}</span>
+          <span>Registry</span>
+          <span className="font-mono text-xs text-gray-600">{shortKey(REGISTRY_ID, 16)}</span>
         </div>
+        {VAULT_ID && (
+          <div className="flex items-center justify-between text-gray-500 mt-1">
+            <span>Vault</span>
+            <span className="font-mono text-xs text-gray-600">{shortKey(VAULT_ID, 16)}</span>
+          </div>
+        )}
       </div>
+
+      <ToastContainer />
     </div>
   );
 }

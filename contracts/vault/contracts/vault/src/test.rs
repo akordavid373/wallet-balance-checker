@@ -4,10 +4,9 @@ use super::*;
 use soroban_sdk::{
     contract, contractimpl,
     testutils::Address as _,
-    Address, Env,
+    Address, Env, Vec, String,
 };
 
-/// Minimal mock of WalletRegistry for inter-contract testing.
 #[contract]
 pub struct MockRegistry;
 
@@ -158,7 +157,6 @@ fn test_get_vault_count() {
 fn test_get_registry_address() {
     let (_env, vault_client, _registry_client) = setup_test_env();
     let registry_address = vault_client.get_registry_address();
-    // Should return a valid address (not the zero address)
     assert!(registry_address != Address::generate(&_env));
 }
 
@@ -185,4 +183,107 @@ fn test_get_nonexistent_vault_fails() {
 
     let result = vault_client.try_get_vault(&wallet);
     assert!(result.is_err());
+}
+
+#[test]
+fn test_multiple_deposits() {
+    let (env, vault_client, registry_client) = setup_test_env();
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+
+    registry_client.register(&wallet);
+    vault_client.create_vault(&wallet);
+    vault_client.deposit(&wallet, &500);
+    vault_client.deposit(&wallet, &1500);
+
+    let info = vault_client.get_vault(&wallet);
+    assert_eq!(info.balance, 2000);
+}
+
+#[test]
+fn test_full_withdraw_empties_vault() {
+    let (env, vault_client, registry_client) = setup_test_env();
+    let wallet = Address::generate(&env);
+    let recipient = Address::generate(&env);
+    env.mock_all_auths();
+
+    registry_client.register(&wallet);
+    vault_client.create_vault(&wallet);
+    vault_client.deposit(&wallet, &1000);
+    vault_client.withdraw(&wallet, &1000, &recipient);
+
+    let info = vault_client.get_vault(&wallet);
+    assert_eq!(info.balance, 0);
+}
+
+#[test]
+fn test_withdraw_to_self() {
+    let (env, vault_client, registry_client) = setup_test_env();
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+
+    registry_client.register(&wallet);
+    vault_client.create_vault(&wallet);
+    vault_client.deposit(&wallet, &500);
+    vault_client.withdraw(&wallet, &200, &wallet);
+
+    let info = vault_client.get_vault(&wallet);
+    assert_eq!(info.balance, 300);
+}
+
+#[test]
+fn test_vault_events_emitted() {
+    let env = Env::default();
+    let registry_id = env.register(MockRegistry, ());
+    let registry_client = MockRegistryClient::new(&env, &registry_id);
+
+    let vault_id = env.register(Vault, ());
+    let vault_client = VaultClient::new(&env, &vault_id);
+    vault_client.init(&registry_id);
+
+    let wallet = Address::generate(&env);
+    let recipient = Address::generate(&env);
+    env.mock_all_auths();
+
+    registry_client.register(&wallet);
+    vault_client.create_vault(&wallet);
+    vault_client.deposit(&wallet, &100);
+    vault_client.withdraw(&wallet, &50, &recipient);
+
+    let events = env.events().all();
+    // Should have at least 3 events (created, deposited, withdrawn)
+    assert!(events.events().len() >= 3);
+}
+
+#[test]
+fn test_init_twice_overwrites() {
+    let env = Env::default();
+    let registry1 = env.register(MockRegistry, ());
+    let registry2 = env.register(MockRegistry, ());
+
+    let vault_id = env.register(Vault, ());
+    let vault_client = VaultClient::new(&env, &vault_id);
+
+    vault_client.init(&registry1);
+    vault_client.init(&registry2);
+
+    let stored = vault_client.get_registry_address();
+    assert_eq!(stored, registry2);
+}
+
+#[test]
+fn test_vault_count_after_removal_via_unregister_does_not_change() {
+    let (env, vault_client, registry_client) = setup_test_env();
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+
+    registry_client.register(&wallet);
+    vault_client.create_vault(&wallet);
+    assert_eq!(vault_client.get_vault_count(), 1);
+
+    registry_client.unregister(&wallet);
+    // Vault still exists in storage; only the cross-contract check affects withdraw
+    assert_eq!(vault_client.get_vault_count(), 1);
+    let info = vault_client.get_vault(&wallet);
+    assert_eq!(info.owner, wallet);
 }

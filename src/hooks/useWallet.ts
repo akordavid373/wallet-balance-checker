@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
+import { isConnected, requestAccess, getAddress, getNetwork } from '@stellar/freighter-api';
+import { Networks } from '@stellar/stellar-sdk';
+import { config } from '../config';
 import {
-  isConnected,
-  getAddress,
-  requestAccess,
-  getNetwork,
-  signTransaction,
-} from '@stellar/freighter-api';
-import {
-  Horizon,
-  TransactionBuilder,
-  Networks,
-  Operation,
-  Asset,
-  BASE_FEE,
-} from '@stellar/stellar-sdk';
+  fetchBalance,
+  fetchAccountDetails,
+  fetchTransactionHistory,
+  sendXLM,
+} from '../utils/services';
+import { AppError } from '../utils/helpers';
 
+export type { AssetBalance, AccountDetails, TransactionRecord } from '../utils/services';
 export interface WalletAccount {
   publicKey: string;
   network: string;
@@ -22,61 +18,11 @@ export interface WalletAccount {
   label?: string;
 }
 
-export interface AssetBalance {
-  asset_type: string;
-  asset_code?: string;
-  asset_issuer?: string;
-  balance: string;
-  limit?: string;
-}
-
-export interface AccountDetails {
-  sequence: string;
-  balances: AssetBalance[];
-  signers: { key: string; type: string; weight: number }[];
-  thresholds: { low_threshold: number; med_threshold: number; high_threshold: number };
-  subentry_count: number;
-  home_domain?: string;
-  last_modified_ledger: number;
-}
-
-export interface TransactionRecord {
-  id: string;
-  hash: string;
-  created_at: string;
-  source_account: string;
-  operation_type: string;
-  amount?: string;
-  asset_code?: string;
-  from?: string;
-  to?: string;
-  successful: boolean;
-}
-
-const HORIZON = 'https://horizon-testnet.stellar.org';
-
 export function useWallet() {
   const [accounts, setAccounts] = useState<WalletAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<WalletAccount | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [server] = useState(() => new Horizon.Server(HORIZON));
-
-  /* ---------- balance ---------- */
-
-  const fetchBalance = useCallback(async (publicKey: string): Promise<string> => {
-    try {
-      const res = await fetch(`${HORIZON}/accounts/${publicKey}`);
-      if (!res.ok) return '0.0000000';
-      const data = await res.json();
-      const native = data.balances?.find((b: any) => b.asset_type === 'native');
-      return native ? native.balance : '0.0000000';
-    } catch {
-      return '0.0000000';
-    }
-  }, []);
-
-  /* ---------- connect ---------- */
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
@@ -87,18 +33,18 @@ export function useWallet() {
       if (!connectedResult.isConnected) {
         const accessResult = await requestAccess();
         if (!accessResult.address) {
-          throw new Error('Freighter access denied. Please approve the connection request.');
+          throw new AppError('Freighter access denied. Please approve the connection request.', 'auth');
         }
       }
 
       const addressResult = await getAddress();
       if (!addressResult.address) {
-        throw new Error('Could not retrieve wallet address from Freighter.');
+        throw new AppError('Could not retrieve wallet address from Freighter.', 'auth');
       }
 
       const networkResult = await getNetwork();
       if (networkResult.networkPassphrase !== Networks.TESTNET) {
-        throw new Error('Please switch your Freighter wallet to Testnet.');
+        throw new AppError('Please switch your Freighter wallet to Testnet.', 'auth');
       }
 
       const balance = await fetchBalance(addressResult.address);
@@ -116,17 +62,13 @@ export function useWallet() {
     } finally {
       setIsConnecting(false);
     }
-  }, [fetchBalance]);
-
-  /* ---------- disconnect ---------- */
+  }, []);
 
   const disconnect = useCallback(() => {
     setAccounts([]);
     setSelectedAccount(null);
     setError(null);
   }, []);
-
-  /* ---------- select account ---------- */
 
   const selectAccount = useCallback(
     (publicKey: string) => {
@@ -135,8 +77,6 @@ export function useWallet() {
     },
     [accounts],
   );
-
-  /* ---------- refresh balances ---------- */
 
   const refreshBalances = useCallback(async () => {
     const updated = await Promise.all(
@@ -150,9 +90,7 @@ export function useWallet() {
       const found = updated.find((a) => a.publicKey === selectedAccount.publicKey);
       if (found) setSelectedAccount(found);
     }
-  }, [accounts, selectedAccount, fetchBalance]);
-
-  /* ---------- add account ---------- */
+  }, [accounts, selectedAccount]);
 
   const addAccount = useCallback(
     async (publicKey?: string) => {
@@ -164,12 +102,12 @@ export function useWallet() {
           const connectedResult = await isConnected();
           if (!connectedResult.isConnected) await requestAccess();
           const addressResult = await getAddress();
-          if (!addressResult.address) throw new Error('Could not retrieve wallet address.');
+          if (!addressResult.address) throw new AppError('Could not retrieve wallet address.', 'auth');
           key = addressResult.address;
         }
 
         if (accounts.some((a) => a.publicKey === key)) {
-          throw new Error('This account is already added');
+          throw new AppError('This account is already added');
         }
 
         const balance = await fetchBalance(key);
@@ -186,10 +124,8 @@ export function useWallet() {
         setError(err.message || 'Failed to add account');
       }
     },
-    [accounts, fetchBalance],
+    [accounts],
   );
-
-  /* ---------- remove account ---------- */
 
   const removeAccount = useCallback(
     (publicKey: string) => {
@@ -203,17 +139,15 @@ export function useWallet() {
     [accounts, selectedAccount],
   );
 
-  /* ---------- friendbot ---------- */
-
   const fundWithFriendbot = useCallback(
     async (publicKey?: string): Promise<string> => {
       const key = publicKey || selectedAccount?.publicKey;
-      if (!key) throw new Error('No account selected');
+      if (!key) throw new AppError('No account selected');
 
-      const res = await fetch(`https://friendbot.stellar.org?addr=${encodeURIComponent(key)}`);
+      const res = await fetch(`${config.friendbotUrl}?addr=${encodeURIComponent(key)}`);
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || 'Friendbot funding failed');
+        throw new AppError(err.detail || 'Friendbot funding failed', 'network');
       }
       const data = await res.json();
       await refreshBalances();
@@ -222,117 +156,37 @@ export function useWallet() {
     [selectedAccount, refreshBalances],
   );
 
-  /* ---------- account details ---------- */
-
-  const fetchAccountDetails = useCallback(async (publicKey: string): Promise<AccountDetails> => {
-    const res = await fetch(`${HORIZON}/accounts/${publicKey}`);
-    if (!res.ok) throw new Error('Failed to fetch account details');
-    const data = await res.json();
-
-    return {
-      sequence: data.sequence,
-      balances: data.balances || [],
-      signers: data.signers || [],
-      thresholds: data.thresholds || { low_threshold: 0, med_threshold: 0, high_threshold: 0 },
-      subentry_count: data.subentry_count || 0,
-      home_domain: data.home_domain,
-      last_modified_ledger: data.last_modified_ledger,
-    };
-  }, []);
-
-  /* ---------- transaction history ---------- */
-
-  const fetchTransactionHistory = useCallback(
-    async (publicKey: string, limit = 20): Promise<TransactionRecord[]> => {
-      const opsRes = await fetch(
-        `${HORIZON}/accounts/${publicKey}/operations?limit=${limit}&order=desc`,
-      );
-      if (!opsRes.ok) return [];
-      const opsData = await opsRes.json();
-
-      return (opsData._embedded?.records || []).map((op: any) => ({
-        id: op.id,
-        hash: op.transaction_hash,
-        created_at: op.created_at,
-        source_account: op.source_account || publicKey,
-        operation_type: op.type,
-        amount: op.amount,
-        asset_code: op.asset_code,
-        from: op.from,
-        to: op.to,
-        successful: op.transaction_successful !== false,
-      }));
-    },
-    [],
-  );
-
-  /* ---------- send XLM ---------- */
-
-  const sendXLM = useCallback(
+  const handleSendXLM = useCallback(
     async (destination: string, amount: string) => {
       if (!selectedAccount) {
         return { hash: '', status: 'failed' as const, message: 'No wallet connected' };
       }
 
       try {
-        const account = await server.loadAccount(selectedAccount.publicKey);
-
-        const tx = new TransactionBuilder(account, {
-          fee: BASE_FEE,
-          networkPassphrase: Networks.TESTNET,
-        })
-          .addOperation(Operation.payment({ destination, asset: Asset.native(), amount }))
-          .setTimeout(30)
-          .build();
-
-        const signed = await signTransaction(tx.toXDR(), {
-          networkPassphrase: Networks.TESTNET,
-        });
-
-        if (!signed.signedTxXdr) {
-          return { hash: '', status: 'failed' as const, message: 'Transaction signing was rejected.' };
+        const result = await sendXLM(destination, amount, selectedAccount.publicKey);
+        if (result.status === 'success') {
+          await refreshBalances();
         }
-
-        const submitRes = await fetch(`${HORIZON}/transactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `tx=${encodeURIComponent(signed.signedTxXdr)}`,
-        });
-
-        if (!submitRes.ok) {
-          const errBody = await submitRes.json();
-          return {
-            hash: '',
-            status: 'failed' as const,
-            message: errBody?.extras?.result_codes?.transaction || 'Transaction submission failed',
-          };
-        }
-
-        const submitData = await submitRes.json();
-        await refreshBalances();
-
-        return { hash: submitData.hash, status: 'success' as const, message: submitData.hash, amount, destination };
+        return result;
       } catch (err: any) {
         return { hash: '', status: 'failed' as const, message: err.message || 'Transaction failed' };
       }
     },
-    [selectedAccount, refreshBalances, server],
+    [selectedAccount, refreshBalances],
   );
 
-  /* ---------- auto-connect on mount ---------- */
-
   useEffect(() => {
-    (async () => {
+    const init = async () => {
       try {
         if ((await isConnected()).isConnected) {
           await connect();
         }
       } catch {
-        // ignore auto-connect errors
+        // silent - auto-connect is best-effort
       }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+    init();
+  }, [connect]);
 
   return {
     accounts,
@@ -344,7 +198,7 @@ export function useWallet() {
     disconnect,
     selectAccount,
     refreshBalances,
-    sendXLM,
+    sendXLM: handleSendXLM,
     addAccount,
     removeAccount,
     fundWithFriendbot,

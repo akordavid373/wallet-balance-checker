@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::{Address as _, Events as _}, Env, String, Address, Vec};
+use soroban_sdk::{testutils::{Address as _, Events as _}, Env, String, Address, Vec, IntoVal};
 
 #[test]
 fn test_register_and_get_wallet() {
@@ -148,4 +148,81 @@ fn test_multiple_wallets() {
 
     let all = client.get_all_wallets();
     assert_eq!(all.len(), 5);
+}
+
+#[test]
+fn test_update_label_on_nonexistent_fails() {
+    let env = Env::default();
+    let contract_id = env.register(WalletRegistry, ());
+    let client = WalletRegistryClient::new(&env, &contract_id);
+
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+    let result = client.try_update_label(&wallet, &String::from_str(&env, "New Label"));
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_update_label_empty_fails() {
+    let env = Env::default();
+    let contract_id = env.register(WalletRegistry, ());
+    let client = WalletRegistryClient::new(&env, &contract_id);
+
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+    client.register(&wallet, &String::from_str(&env, "Valid"));
+    let result = client.try_update_label(&wallet, &String::from_str(&env, ""));
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_long_label() {
+    let env = Env::default();
+    let contract_id = env.register(WalletRegistry, ());
+    let client = WalletRegistryClient::new(&env, &contract_id);
+
+    let wallet = Address::generate(&env);
+    let long_label = String::from_str(&env, "A very long wallet label that exceeds typical lengths to ensure the contract handles it gracefully");
+    env.mock_all_auths();
+    let info = client.register(&wallet, &long_label);
+    assert_eq!(info.label, long_label);
+}
+
+#[test]
+fn test_event_topics_are_correct() {
+    let env = Env::default();
+    let contract_id = env.register(WalletRegistry, ());
+    let client = WalletRegistryClient::new(&env, &contract_id);
+
+    let wallet = Address::generate(&env);
+    env.mock_all_auths();
+    client.register(&wallet, &String::from_str(&env, "Topics"));
+
+    let events = env.events().all();
+    let last = events.events().last().unwrap();
+    // The first topic should be the event signature
+    assert!(!last.0.is_empty());
+}
+
+#[test]
+fn test_remove_after_multi_register() {
+    let env = Env::default();
+    let contract_id = env.register(WalletRegistry, ());
+    let client = WalletRegistryClient::new(&env, &contract_id);
+
+    env.mock_all_auths();
+    let w1 = Address::generate(&env);
+    let w2 = Address::generate(&env);
+    let w3 = Address::generate(&env);
+
+    client.register(&w1, &String::from_str(&env, "A"));
+    client.register(&w2, &String::from_str(&env, "B"));
+    client.register(&w3, &String::from_str(&env, "C"));
+
+    assert_eq!(client.get_wallet_count(), 3);
+    client.remove_wallet(&w2);
+    assert_eq!(client.get_wallet_count(), 2);
+    assert!(!client.is_registered(&w2));
+    assert!(client.is_registered(&w1));
+    assert!(client.is_registered(&w3));
 }

@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import type { RegisteredWallet, ContractEvent, ContractError } from '../hooks/useContract';
-
-function shortKey(k: string, n = 8) {
-  return `${k.slice(0, n)}\u2026${k.slice(-n)}`;
-}
+import { shortKey } from '../utils/helpers';
+import { toast } from './Toast';
 
 function ContractErrorBanner({
   error,
@@ -42,7 +40,7 @@ function ContractEventFeed({ events }: { events: ContractEvent[] }) {
       {events.slice(0, 20).map((e, i) => (
         <div key={e.id || i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`w-2 h-2 rounded-full shrink-0 ${e.type.includes('reg') ? 'bg-green-400' : 'bg-red-400'}`} />
+            <span className={`w-2 h-2 rounded-full shrink-0 ${e.type.includes('reg') || e.type.includes('osit') ? 'bg-green-400' : e.type.includes('ith') ? 'bg-orange-400' : 'bg-red-400'}`} />
             <span className="text-gray-500 text-xs font-mono truncate">{e.type}</span>
             <span className="font-mono text-xs text-gray-400 truncate">{shortKey(e.wallet, 6)}</span>
           </div>
@@ -59,12 +57,15 @@ export default function ContractPanel({
   contractError,
   isContractLoading,
   isPolling,
+  hasNewEvents,
+  eventsCount,
   selectedPublicKey,
   onRegister,
   onRemove,
   onRefresh,
   onStartPolling,
   onStopPolling,
+  onRestartPolling,
   onDismissError,
 }: {
   registeredWallets: RegisteredWallet[];
@@ -72,12 +73,15 @@ export default function ContractPanel({
   contractError: ContractError | null;
   isContractLoading: boolean;
   isPolling: boolean;
+  hasNewEvents?: boolean;
+  eventsCount?: number;
   selectedPublicKey: string;
   onRegister: (wallet: string, label: string) => void;
   onRemove: (wallet: string) => void;
   onRefresh: () => void;
   onStartPolling: () => void;
   onStopPolling: () => void;
+  onRestartPolling?: () => void;
   onDismissError: () => void;
 }) {
   const [label, setLabel] = useState('');
@@ -97,7 +101,13 @@ export default function ContractPanel({
           <svg className="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Wallet Registry (Contract)</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Wallet Registry</h3>
+          {isPolling && (
+            <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              Live
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {!isPolling ? (
@@ -108,12 +118,21 @@ export default function ContractPanel({
               Start Events
             </button>
           ) : (
-            <button
-              onClick={onStopPolling}
-              className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
-            >
-              Stop Events
-            </button>
+            <div className="flex gap-1">
+              <button
+                onClick={onStopPolling}
+                className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
+              >
+                Stop
+              </button>
+              <button
+                onClick={onRestartPolling}
+                className="px-2 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100"
+                title="Restart polling"
+              >
+                &#x21BB;
+              </button>
+            </div>
           )}
           <button
             onClick={onRefresh}
@@ -142,7 +161,7 @@ export default function ContractPanel({
                 disabled={isContractLoading}
                 className="px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
               >
-                {isContractLoading ? 'Removing\u2026' : 'Unregister'}
+                {isContractLoading ? 'Removing...' : 'Unregister'}
               </button>
             ) : (
               !showForm ? (
@@ -172,6 +191,7 @@ export default function ContractPanel({
                     onRegister(selectedPublicKey, label);
                     setLabel('');
                     setShowForm(false);
+                    toast('Registration submitted', 'info');
                   }
                 }}
               />
@@ -181,12 +201,13 @@ export default function ContractPanel({
                     onRegister(selectedPublicKey, label);
                     setLabel('');
                     setShowForm(false);
+                    toast('Registration submitted', 'info');
                   }
                 }}
                 disabled={isContractLoading || !label}
                 className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
-                {isContractLoading ? 'Registering\u2026' : 'Register'}
+                {isContractLoading ? 'Registering...' : 'Register'}
               </button>
             </div>
             <button onClick={() => setShowForm(false)} className="text-xs text-gray-400 hover:text-gray-600">
@@ -206,10 +227,9 @@ export default function ContractPanel({
             <h4 className="text-sm font-medium text-gray-700">
               Registered Wallets ({registeredWallets.length})
             </h4>
-            {isPolling && (
-              <span className="flex items-center gap-1 text-xs text-green-600">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                Live
+            {hasNewEvents && eventsCount && eventsCount > 0 && (
+              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                {eventsCount} new event{eventsCount !== 1 ? 's' : ''}
               </span>
             )}
           </div>
