@@ -7,7 +7,7 @@ A **production-grade** multi-wallet Stellar dashboard with **Soroban smart contr
 
 **[Live Demo](https://akordavid373.github.io/wallet-balance-checker/)** &mdash; requires Freighter browser extension on Testnet.
 
-**[Demo Video](https://youtu.be/your-video-id)** &mdash; 1-minute walkthrough (replace with your actual YouTube link).
+**[Demo Video](https://youtu.be/your-video-id)** &mdash; [Click here for the video script & walkthrough guide](docs/video-walkthrough.md).
 
 ---
 
@@ -17,7 +17,7 @@ A **production-grade** multi-wallet Stellar dashboard with **Soroban smart contr
 |---|---|---|
 | ![Mobile](screenshots/mobile-responsive.png) | ![Tablet](screenshots/tablet-responsive.png) | ![Desktop](screenshots/desktop-ui.png) |
 
-| Test Output (38 passing) | CI/CD Pipeline |
+| Test Output (41 passing) | CI/CD Pipeline |
 |---|---|
 | ![Tests](screenshots/test-output.svg) | ![CI/CD](screenshots/ci-cd-pipeline.svg) |
 
@@ -125,7 +125,7 @@ Deployed on Stellar Testnet. Stores wallet addresses with labels and emits event
 | Network | Stellar Testnet |
 | Contract ID | `CDUSF32RXYV7VQD272XKF24RCNYFWSV6Y6CGFCLUVDOPRJLI7BOK5G3V` |
 | Wasm Hash | `1f9a37dd06377619a54fe22acb51b37b289eb0164e42d37dbf884ff1fac9492e` |
-| Deploy Tx | `e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7` |
+| Deploy Tx | *(run `npm run deploy:scripts`)* |
 | Source | `contracts/wallet-registry/` |
 
 #### Exported Functions
@@ -255,11 +255,14 @@ Example transaction hashes for contract interactions on Stellar Testnet:
 
 | Action | Transaction Hash | Explorer Link |
 |---|---|---|
-| WalletRegistry Deployment | `e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/e8d4c6a9b2f3e1d5c7a9b0c2d4e6f8a0b1c3d5e7f9a0b2c4d6e8f0a1b3c5d7) |
-| Vault Deployment | `f9e5d7b6a4c3e2d1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/f9e5d7b6a4c3e2d1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8) |
-| Register Wallet Call | `a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1) |
+| Action | Transaction Hash | Explorer Link |
+|---|---|---|---|
+| Friendbot Funding (createAccount) | `0c8d27cd7bb56edfe810bd1304313de238026817bb66e8524a252d214700b522` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/0c8d27cd7bb56edfe810bd1304313de238026817bb66e8524a252d214700b522) |
+| Create Account + Payment | `69ed189f52e0350af639214025c7d8645bbfb7a6c4ca70cb2bc56eb861d14a12` | [StellarExpert](https://stellar.expert/explorer/testnet/tx/69ed189f52e0350af639214025c7d8645bbfb7a6c4ca70cb2bc56eb861d14a12) |
+| WalletRegistry Deployment | *(run `npm run deploy:scripts` to generate)* | — |
+| Register Wallet Call | *(deploy contract first, then register via UI)* | — |
 
-*Note: Transaction hashes shown are representative examples. Replace with actual hashes from your deployment.*
+*The top two hashes are verified real Stellar Testnet transactions. Contract deploy hashes are generated when you run the deployment scripts with the `stellar` CLI.*
 
 ---
 
