@@ -31,7 +31,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 </head>
 <body>
 <div id="slides">
-  <div class="slide active" data-duration="10">
+  <div class="slide active" data-duration="15">
     <div class="step">Step 1 of 7</div>
     <h1>Wallet Balance Checker</h1>
     <p>A production-grade Stellar dashboard with Soroban smart contract integration, inter-contract communication, real-time event streaming, CI/CD pipeline, and mobile-responsive design.</p>
@@ -43,10 +43,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="12">
+  <div class="slide" data-duration="18">
     <div class="step">Step 2 of 7</div>
     <h1>Connect Screen &amp; Prerequisites</h1>
     <p>On load, users see the connect screen with clear instructions. The app detects Freighter wallet, enforces Testnet, and provides one-click Friendbot funding for new accounts.</p>
+    <p style="margin-top:8px">Prerequisites: Install Freighter, create Testnet wallet, fund via Friendbot. The app validates network and shows clear error states.</p>
     <div class="preview-row">
       <div class="preview-item"><div class="icon">🔌</div><div class="label">Connect</div><div class="value">Freighter Wallet</div></div>
       <div class="preview-item"><div class="icon">📋</div><div class="label">Prerequisites</div><div class="value">3 Steps Listed</div></div>
@@ -60,10 +61,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="10">
+  <div class="slide" data-duration="16">
     <div class="step">Step 3 of 7</div>
     <h1>Dashboard &amp; Multi-Account</h1>
     <p>Connected view shows XLM balance, account selector, Send XLM form, and Friendbot funding. Add unlimited accounts by key or from Freighter.</p>
+    <p style="margin-top:8px">The hero card shows the selected account balance with Testnet indicator. Tabs for Balances, All Assets, Account Details, and Transaction History.</p>
     <div class="preview-row">
       <div class="preview-item"><div class="icon">👛</div><div class="label">Balance</div><div class="value">1,234.5678 XLM</div></div>
       <div class="preview-item"><div class="icon">📊</div><div class="label">Accounts</div><div class="value">Multi-Account</div></div>
@@ -71,7 +73,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="10">
+  <div class="slide" data-duration="16">
     <div class="step">Step 4 of 7</div>
     <h1>Soroban Smart Contracts</h1>
     <p>WalletRegistry contract deployed on Stellar Testnet. Register wallets with labels, view all registrations, and stream real-time contract events.</p>
@@ -87,7 +89,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="10">
+  <div class="slide" data-duration="16">
     <div class="step">Step 5 of 7</div>
     <h1>Inter-Contract Communication</h1>
     <p>Vault contract calls WalletRegistry's <code>is_registered</code> via <code>env.invoke_contract()</code>. Only registered wallets can create vaults or withdraw funds.</p>
@@ -104,7 +106,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="12">
+  <div class="slide" data-duration="18">
     <div class="step">Step 6 of 7</div>
     <h1>Tests &amp; CI/CD</h1>
     <p>41 total tests: 14 WalletRegistry + 17 Vault Rust unit tests, 10 Playwright E2E tests. CI/CD pipeline runs lint, contracts, build, e2e, and auto-deploys to GitHub Pages.</p>
@@ -124,7 +126,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
   </div>
 
-  <div class="slide" data-duration="8">
+  <div class="slide" data-duration="15">
     <div class="step">Step 7 of 7</div>
     <h1>Ready to Use</h1>
     <p>Clone the repo, install dependencies, start the dev server, connect Freighter, and you're live. Full documentation in README.</p>
