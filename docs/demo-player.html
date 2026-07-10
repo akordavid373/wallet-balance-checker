@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Balance Checker — Demo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.slide { display: none; width: 960px; height: 600px; background: #1e293b; border-radius: 16px; padding: 40px; flex-direction: column; position: relative; overflow: hidden; }
+.slide.active { display: flex; }
+.slide .step { color: #64748b; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.slide h1 { color: #f1f5f9; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+.slide p { color: #94a3b8; font-size: 16px; line-height: 1.6; max-width: 640px; }
+.slide .badge { display: inline-block; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; margin-top: 16px; }
+.preview-box { background: #0f172a; border-radius: 12px; padding: 20px; margin-top: 20px; border: 1px solid #334155; width: 100%; }
+.preview-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.preview-item { flex: 1; min-width: 200px; background: #1e293b; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #334155; }
+.preview-item .icon { font-size: 32px; margin-bottom: 8px; }
+.preview-item .label { color: #64748b; font-size: 12px; }
+.preview-item .value { color: #e2e8f0; font-size: 15px; font-weight: 600; margin-top: 4px; }
+.terminal { background: #0f172a; border-radius: 8px; padding: 16px 20px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; margin-top: 16px; border: 1px solid #334155; }
+.terminal .green { color: #4ade80; }
+.terminal .gray { color: #64748b; }
+.terminal .cyan { color: #22d3ee; }
+.arrow { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); color: #3b82f6; font-size: 28px; animation: bounce 1.5s infinite; }
+@keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-8px); } }
+.status-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: #334155; }
+.status-bar .fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div id="slides">
+  <div class="slide active" data-duration="10">
+    <div class="step">Step 1 of 7</div>
+    <h1>Wallet Balance Checker</h1>
+    <p>A production-grade Stellar dashboard with Soroban smart contract integration, inter-contract communication, real-time event streaming, CI/CD pipeline, and mobile-responsive design.</p>
+    <div class="badge">Stellar Testnet · Freighter · React · TypeScript · Rust</div>
+    <div class="preview-box" style="margin-top:auto;margin-bottom:20px;text-align:center;padding:40px">
+      <div style="font-size:48px;margin-bottom:16px">⚡</div>
+      <div style="color:#e2e8f0;font-size:20px;font-weight:600">Multi-Wallet Dashboard</div>
+      <div style="color:#64748b;font-size:14px;margin-top:4px">Track balances · Send XLM · Smart Contracts</div>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="12">
+    <div class="step">Step 2 of 7</div>
+    <h1>Connect Screen &amp; Prerequisites</h1>
+    <p>On load, users see the connect screen with clear instructions. The app detects Freighter wallet, enforces Testnet, and provides one-click Friendbot funding for new accounts.</p>
+    <div class="preview-row">
+      <div class="preview-item"><div class="icon">🔌</div><div class="label">Connect</div><div class="value">Freighter Wallet</div></div>
+      <div class="preview-item"><div class="icon">📋</div><div class="label">Prerequisites</div><div class="value">3 Steps Listed</div></div>
+      <div class="preview-item"><div class="icon">🚰</div><div class="label">Friendbot</div><div class="value">Auto-Fund</div></div>
+    </div>
+    <div class="terminal">
+      <span class="gray">$</span> <span class="cyan">Wallet Balance Checker</span><br>
+      <span class="gray">  Connect your Freighter wallet (Stellar Testnet)</span><br>
+      <span class="gray">  [Connect Freighter Wallet] — button</span><br>
+      <span class="green">  ✓ Prerequisites displayed</span>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="10">
+    <div class="step">Step 3 of 7</div>
+    <h1>Dashboard &amp; Multi-Account</h1>
+    <p>Connected view shows XLM balance, account selector, Send XLM form, and Friendbot funding. Add unlimited accounts by key or from Freighter.</p>
+    <div class="preview-row">
+      <div class="preview-item"><div class="icon">👛</div><div class="label">Balance</div><div class="value">1,234.5678 XLM</div></div>
+      <div class="preview-item"><div class="icon">📊</div><div class="label">Accounts</div><div class="value">Multi-Account</div></div>
+      <div class="preview-item"><div class="icon">💸</div><div class="label">Send XLM</div><div class="value">Freighter Signed</div></div>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="10">
+    <div class="step">Step 4 of 7</div>
+    <h1>Soroban Smart Contracts</h1>
+    <p>WalletRegistry contract deployed on Stellar Testnet. Register wallets with labels, view all registrations, and stream real-time contract events.</p>
+    <div class="preview-row">
+      <div class="preview-item"><div class="icon">📝</div><div class="label">Registry</div><div class="value">Register/Remove</div></div>
+      <div class="preview-item"><div class="icon">🔔</div><div class="label">Events</div><div class="value">Real-time Stream</div></div>
+      <div class="preview-item"><div class="icon">📡</div><div class="label">Polling</div><div class="value">15s Interval</div></div>
+    </div>
+    <div class="terminal">
+      <span class="gray">Contract ID:</span> <span class="cyan">CDUSF32…OK5G3V</span><br>
+      <span class="gray">Functions:</span> register, remove_wallet, get_all_wallets, is_registered<br>
+      <span class="green">✓ 14 unit tests passing</span>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="10">
+    <div class="step">Step 5 of 7</div>
+    <h1>Inter-Contract Communication</h1>
+    <p>Vault contract calls WalletRegistry's <code>is_registered</code> via <code>env.invoke_contract()</code>. Only registered wallets can create vaults or withdraw funds.</p>
+    <div class="terminal">
+      <span class="gray">Vault → Registry: is_registered(wallet)</span><br>
+      <span class="green">  ✓ Authorized — create vault</span><br>
+      <span class="red">  ✗ Not registered — rejected</span><br>
+      <span class="gray">Events: VaultCreated, VaultDeposited, VaultWithdrawn</span>
+    </div>
+    <div class="preview-row" style="margin-top:16px">
+      <div class="preview-item"><div class="icon">🏦</div><div class="label">Create Vault</div><div class="value">Requires Registration</div></div>
+      <div class="preview-item"><div class="icon">💰</div><div class="label">Deposit</div><div class="value">i128 Amount</div></div>
+      <div class="preview-item"><div class="icon">🏧</div><div class="label">Withdraw</div><div class="value">Cross-Contract Auth</div></div>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="12">
+    <div class="step">Step 6 of 7</div>
+    <h1>Tests &amp; CI/CD</h1>
+    <p>41 total tests: 14 WalletRegistry + 17 Vault Rust unit tests, 10 Playwright E2E tests. CI/CD pipeline runs lint, contracts, build, e2e, and auto-deploys to GitHub Pages.</p>
+    <div class="terminal">
+      <span class="green">✓ wallet-registry: 14 passed</span><br>
+      <span class="green">✓ vault: 17 passed</span><br>
+      <span class="green">✓ E2E Playwright: 10 passed</span><br>
+      <span class="gray">───</span><br>
+      <span class="cyan">Total: 41 tests · 0 failed</span>
+    </div>
+    <div class="preview-row" style="margin-top:16px">
+      <div class="preview-item"><div class="icon">🔍</div><div class="label">lint</div><div class="value">ESLint</div></div>
+      <div class="preview-item"><div class="icon">🦀</div><div class="label">contracts</div><div class="value">Build + Test</div></div>
+      <div class="preview-item"><div class="icon">🏗️</div><div class="label">build</div><div class="value">TypeScript + Vite</div></div>
+      <div class="preview-item"><div class="icon">🧪</div><div class="label">e2e</div><div class="value">Playwright</div></div>
+      <div class="preview-item"><div class="icon">🚀</div><div class="label">deploy</div><div class="value">GitHub Pages</div></div>
+    </div>
+  </div>
+
+  <div class="slide" data-duration="8">
+    <div class="step">Step 7 of 7</div>
+    <h1>Ready to Use</h1>
+    <p>Clone the repo, install dependencies, start the dev server, connect Freighter, and you're live. Full documentation in README.</p>
+    <div class="terminal">
+      <span class="gray">$</span> git clone https://github.com/akordavid373/wallet-balance-checker.git<br>
+      <span class="gray">$</span> cd wallet-balance-checker<br>
+      <span class="gray">$</span> npm install<br>
+      <span class="gray">$</span> npm run dev<br>
+      <span class="green">  ✓ http://localhost:3000</span>
+    </div>
+    <div style="margin-top:24px;text-align:center">
+      <div style="font-size:48px">🌟</div>
+      <div style="color:#f1f5f9;font-size:18px;font-weight:600;margin-top:8px">Live Demo: akordavid373.github.io/wallet-balance-checker</div>
+    </div>
+  </div>
+</div>
+<div class="status-bar" id="progress"><div class="fill" id="progressFill" style="width:0%"></div></div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+let totalDuration = 0;
+const durations = Array.from(slides).map(s => parseInt(s.dataset.duration) || 8);
+durations.forEach(d => totalDuration += d);
+let elapsed = 0;
+
+function showSlide(idx) {
+  slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+  document.querySelector('.arrow')?.remove();
+  if (idx === slides.length - 1) {
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '✦';
+    slides[idx].appendChild(arrow);
+  }
+}
+
+function advance() {
+  if (current < slides.length - 1) {
+    current++;
+    showSlide(current);
+  }
+}
+
+let slideElapsed = 0;
+setInterval(() => {
+  slideElapsed++;
+  elapsed++;
+  const pct = Math.min(100, (elapsed / totalDuration) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  if (slideElapsed >= durations[current]) {
+    slideElapsed = 0;
+    if (current < slides.length - 1) advance();
+  }
+}, 1000);
+
+showSlide(0);
+</script>
+</body>
+</html>

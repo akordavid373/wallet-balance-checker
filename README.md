@@ -7,7 +7,7 @@ A **production-grade** multi-wallet Stellar dashboard with **Soroban smart contr
 
 **[Live Demo](https://akordavid373.github.io/wallet-balance-checker/)** &mdash; requires Freighter browser extension on Testnet.
 
-**[Demo Video](https://youtu.be/your-video-id)** &mdash; [Click here for the video script & walkthrough guide](docs/video-walkthrough.md).
+**[▶️ Watch Demo Video](screenshots/demo-video.webm)** &mdash; 78-second walkthrough (downloads or plays inline). [Script & tips](docs/video-walkthrough.md).
 
 ---
 
@@ -22,8 +22,10 @@ A **production-grade** multi-wallet Stellar dashboard with **Soroban smart contr
 | ![Tests](screenshots/test-output.svg) | ![CI/CD](screenshots/ci-cd-pipeline.svg) |
 
 | Connected Wallet | Balances View | Transaction Feedback |
-|---|---|---|
+|---|---|---|---|
 | ![Connected](screenshots/connected.svg) | ![Balances](screenshots/balances.svg) | ![Transaction](screenshots/transaction.svg) |
+
+**[▶️ Demo Video](screenshots/demo-video.webm)** — 78-second walkthrough covering connect screen, smart contracts, tests, and CI/CD.
 
 ---
 
